@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A product in the webshop",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Product name" },
+        "price": { "type": "number", "description": "Product price" },
+        "img": { "type": "string", "description": "Product image URL" },
+        "category": { "type": "string", "description": "Product category" },
+        "tag": { "type": "string", "description": "Optional tag like 'Bestseller'" },
+        "rating": { "type": "number", "description": "Product rating" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["name", "price", "img", "category"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of webshop products"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - name: string (required)
+    //   - price: number (required)
+    //   - img: string (required)
+    //   - category: string (required)
+    //   - tag: string (optional)
+    //   - rating: number (optional)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "jobsejanwillem@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.price is number && data.price >= 0 &&
+             data.img is string && data.img.size() > 0 &&
+             data.category is string && data.category.size() > 0 &&
+             (!('tag' in data) || (data.tag is string && data.tag.size() < 50)) &&
+             (!('rating' in data) || (data.rating is number && data.rating >= 0 && data.rating <= 5));
+    }
+
+    match /products/{productId} {
+      allow read: if true; // Publicly readable
+      allow create, update, delete: if isAdmin() && isValidProduct(request.resource.data);
+    }
+  }
+}

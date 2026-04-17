@@ -12,17 +12,11 @@ const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>('/menukaart.pdf');
 
   useEffect(() => {
-    // Listen for real-time updates as well
-    const unsubscribe = onSnapshot(doc(db, 'settings', 'menu'), (doc) => {
-      if (doc.exists()) {
-        setPdfUrl(doc.data().pdfUrl);
-      }
-    });
-
-    return () => unsubscribe();
+    // We no longer need the Firestore listener if we use a static file
+    // The user will replace the file in the public folder manually
   }, []);
 
   return (

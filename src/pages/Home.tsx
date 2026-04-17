@@ -405,6 +405,36 @@ const BookingSection = () => {
   );
 };
 
+const MenuBanner = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
+  return (
+    <section className="py-24 bg-wine relative overflow-hidden">
+      <div className="absolute inset-0 bg-floral opacity-10"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-[3rem] p-12 md:p-20 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="space-y-6 text-center md:text-left">
+            <span className="text-gold font-medium tracking-[0.3em] uppercase text-xs">Ontdek onze kaart</span>
+            <h2 className="text-4xl md:text-6xl font-heading text-white leading-tight">Zintuigprikkelende<br />Smaakbeleving</h2>
+            <p className="text-petal/70 text-lg max-w-xl font-light">
+              Van onze beroemde signature High Tea tot verfijnde patisserie en hartige Franse amuses. Laat u verleiden door ons seizoensgebonden assortiment.
+            </p>
+          </div>
+          <Button 
+            onClick={onOpenMenu}
+            className="group bg-gold hover:bg-gold-dark text-white rounded-full px-12 py-8 text-xl shadow-2xl shadow-gold/20 transition-all duration-500 hover:scale-105 inline-flex items-center gap-3 border-none"
+          >
+            Open de Menukaart
+            <div className="p-2 bg-white/20 rounded-full group-hover:bg-white/40 transition-colors">
+              <ChevronRight className="h-5 w-5" />
+            </div>
+          </Button>
+        </div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold/50 to-transparent"></div>
+    </section>
+  );
+};
+
 export default function Home() {
   const { setIsMenuOpen, pdfUrl } = useMenu();
 
@@ -412,7 +442,7 @@ export default function Home() {
     if (pdfUrl) {
       setIsMenuOpen(true);
     } else {
-      alert("Het menu is momenteel niet beschikbaar. Probeer het later opnieuw.");
+      alert("De menukaart wordt momenteel bijgewerkt. Probeer het later nog eens!");
     }
   };
 
@@ -420,6 +450,7 @@ export default function Home() {
     <>
       <Hero onOpenMenu={handleOpenMenu} />
       <TeaRoom onOpenMenu={handleOpenMenu} />
+      <MenuBanner onOpenMenu={handleOpenMenu} />
       <Boutique />
       <AboutUs />
       <BookingSection />

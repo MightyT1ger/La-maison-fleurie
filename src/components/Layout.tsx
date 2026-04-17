@@ -42,6 +42,14 @@ export const Navbar = () => {
   const { cart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
   const { isMenuOpen, setIsMenuOpen, pdfUrl } = useMenu();
 
+  const handleOpenMenu = () => {
+    if (pdfUrl) {
+      setIsMenuOpen(true);
+    } else {
+      alert("De menukaart wordt momenteel bijgewerkt. Probeer het later nog eens!");
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -50,7 +58,6 @@ export const Navbar = () => {
 
   const navItems = [
     { name: 'High Tea', href: isHome ? '#tea-room' : '/#tea-room' },
-    { name: 'Menu', onClick: () => setIsMenuOpen(true) },
     { name: 'Boutique', href: isHome ? '#boutique' : '/#boutique' },
     { name: 'Over Ons', href: isHome ? '#about' : '/#about' },
     { name: 'Contact', href: isHome ? '#contact' : '/#contact' },
@@ -60,8 +67,8 @@ export const Navbar = () => {
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-      scrolled || !isHome
-        ? "bg-white/90 backdrop-blur-md border-b border-wine/5 py-2 shadow-sm" 
+      scrolled || !isHome || isMenuOpen
+        ? "bg-white/95 backdrop-blur-md border-b border-wine/5 py-2 shadow-sm" 
         : "bg-transparent py-4"
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,32 +95,29 @@ export const Navbar = () => {
           </motion.div>
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              item.href ? (
-                <Link 
-                  key={item.name}
-                  to={item.href} 
-                  className={cn(
-                    "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
-                    scrolled || !isHome ? "text-foreground/70" : "text-white/80"
-                  )}
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <button
-                  key={item.name}
-                  onClick={item.onClick}
-                  className={cn(
-                    "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
-                    scrolled || !isHome ? "text-foreground/70" : "text-white/80"
-                  )}
-                >
-                  {item.name}
-                </button>
-              )
+              <Link 
+                key={item.name}
+                to={item.href} 
+                className={cn(
+                  "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
+                  scrolled || !isHome ? "text-foreground/70" : "text-white/80"
+                )}
+              >
+                {item.name}
+              </Link>
             ))}
             
             <div className="flex items-center gap-4 border-l border-wine/10 pl-8">
+              <button
+                onClick={handleOpenMenu}
+                className={cn(
+                  "text-[10px] font-bold uppercase tracking-[0.25em] transition-all px-4 py-2 rounded-full border border-transparent hover:border-gold hover:text-gold",
+                  scrolled || !isHome ? "text-wine" : "text-white"
+                )}
+              >
+                Menukaart
+              </button>
+
               <Sheet>
                 <SheetTrigger className={cn(
                   "relative p-2 transition-colors hover:text-gold",
@@ -269,36 +273,34 @@ export const Navbar = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-petal border-b border-wine/20 px-4 pt-2 pb-6 space-y-4"
+          className="md:hidden bg-petal border-b border-wine/20 px-4 pt-4 pb-8 space-y-6"
         >
           {navItems.map((item) => (
-            item.href ? (
-              <Link 
-                key={item.name}
-                to={item.href} 
-                className="block text-lg font-medium" 
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ) : (
-              <button
-                key={item.name}
-                className="block text-lg font-medium" 
-                onClick={() => {
-                  item.onClick?.();
-                  setIsOpen(false);
-                }}
-              >
-                {item.name}
-              </button>
-            )
+            <Link 
+              key={item.name}
+              to={item.href} 
+              className="block text-lg font-medium text-foreground/80" 
+              onClick={() => setIsOpen(false)}
+            >
+              {item.name}
+            </Link>
           ))}
-          <Link to="/#booking" onClick={() => setIsOpen(false)}>
-            <Button className="w-full bg-wine hover:bg-wine-dark text-white rounded-full">
-              Reserveer Nu
+          <div className="pt-4 space-y-4">
+            <Button 
+              className="w-full bg-petal border-2 border-wine text-wine rounded-full py-6 font-bold"
+              onClick={() => {
+                handleOpenMenu();
+                setIsOpen(false);
+              }}
+            >
+              Bekijk Menukaart
             </Button>
-          </Link>
+            <Link to="/#booking" onClick={() => setIsOpen(false)} className="block">
+              <Button className="w-full bg-wine hover:bg-wine-dark text-white rounded-full py-6 font-bold">
+                Reserveer Nu
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       )}
 

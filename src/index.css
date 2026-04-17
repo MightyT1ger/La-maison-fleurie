@@ -49,8 +49,8 @@
     --color-wine: #5D102C;
     --color-wine-dark: #3D0B1D;
     --color-wine-light: #8E2B4A;
-    --color-gold: #D4AF37;
-    --color-gold-dark: #B8860B;
+    --color-gold: #C5A059;
+    --color-gold-dark: #A6804A;
     --color-petal: #FDF2F5;
     --color-petal-dark: #F5E6EA;
 }
@@ -74,7 +74,7 @@
     --popover-foreground: #2D1B22;
     --primary: #5D102C;
     --primary-foreground: #FFFFFF;
-    --secondary: #D4AF37;
+    --secondary: #C5A059;
     --secondary-foreground: #FFFFFF;
     --muted: #F5E6EA;
     --muted-foreground: #7D5C68;

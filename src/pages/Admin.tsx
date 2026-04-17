@@ -14,8 +14,6 @@ export default function Admin() {
   const [accessCode, setAccessCode] = useState('');
   const [isHashed, setIsHashed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
-  const [menuConfig, setMenuConfig] = useState<any>(null);
-  const [uploading, setUploading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
@@ -32,43 +30,10 @@ export default function Admin() {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     
-    const unsubscribeMenu = onSnapshot(doc(db, 'settings', 'menu'), (doc) => {
-      if (doc.exists()) {
-        setMenuConfig(doc.data());
-      }
-    });
-
     return () => {
       unsubscribe();
-      unsubscribeMenu();
     };
   }, [isAdmin]);
-
-  const handleMenuUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !isAdmin) return;
-
-    if (file.type !== 'application/pdf') {
-      alert("Alleen PDF bestanden zijn toegestaan.");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const storageRef = ref(storage, `menus/menukaart_${Date.now()}.pdf`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      
-      await setDoc(doc(db, 'settings', 'menu'), {
-        pdfUrl: url,
-        updatedAt: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Error uploading menu:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,54 +168,31 @@ export default function Admin() {
 
         {/* Menu Section */}
         <Card className="p-8 border-wine/10 bg-white shadow-sm overflow-hidden relative">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 text-center md:text-left">
             <div className="space-y-2">
-              <h2 className="text-2xl font-heading text-wine flex items-center gap-3">
+              <h2 className="text-2xl font-heading text-wine flex items-center justify-center md:justify-start gap-3">
                 <FileText className="h-6 w-6" /> Menukaart Beheer
               </h2>
-              <p className="text-muted-foreground">Upload een PDF die klanten op de site kunnen inzien.</p>
+              <p className="text-muted-foreground max-w-xl">
+                De menukaart wordt nu direct geladen vanuit de bestanden. Om het menu aan te passen, vervang je simpelweg het bestand <code className="bg-petal px-2 py-1 rounded text-wine font-bold">public/menukaart.pdf</code>.
+              </p>
             </div>
             
-            <div className="flex items-center gap-4">
-              {menuConfig?.pdfUrl && (
-                <a 
-                  href={menuConfig.pdfUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-wine font-medium hover:underline px-4 py-2"
-                >
-                  <ExternalLink className="h-4 w-4" /> Bekijk huidige PDF
-                </a>
-              )}
-              
-              <div className="relative">
-                <Input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleMenuUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  disabled={uploading}
-                />
-                <Button 
-                  disabled={uploading}
-                  className="bg-wine text-white rounded-full px-8 py-6 h-auto transition-transform active:scale-95"
-                >
-                  {uploading ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  ) : (
-                    <Upload className="mr-2 h-5 w-5" />
-                  )}
-                  {uploading ? 'Verwerken...' : 'PDF Uploaden'}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <a 
+                href="/menukaart.pdf" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="rounded-full border-wine text-wine px-8 py-6 h-auto">
+                  <ExternalLink className="mr-2 h-5 w-5" /> Bekijk Huidige PDF
                 </Button>
+              </a>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground opacity-60 font-medium">
+                Systeem: Static File Management
               </div>
             </div>
           </div>
-          
-          {menuConfig?.updatedAt && (
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-6 opacity-60">
-              Laatst bijgewerkt: {new Date(menuConfig.updatedAt.toDate()).toLocaleString('nl-NL')}
-            </p>
-          )}
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

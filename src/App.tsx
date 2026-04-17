@@ -6,6 +6,7 @@ import Webshop from '@/pages/Webshop';
 import Admin from '@/pages/Admin';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { MenuProvider } from '@/context/MenuContext';
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -29,20 +30,22 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <CartProvider>
-          <ScrollToTop />
-          <div className="min-h-screen bg-petal selection:bg-wine/30 selection:text-wine-dark">
-            <Navbar />
-            <main>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/webshop" element={<Webshop />} />
-                <Route path="/admin" element={<Admin />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </CartProvider>
+        <MenuProvider>
+          <CartProvider>
+            <ScrollToTop />
+            <div className="min-h-screen bg-petal selection:bg-wine/30 selection:text-wine-dark">
+              <Navbar />
+              <main>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/webshop" element={<Webshop />} />
+                  <Route path="/beheer-fleurie" element={<Admin />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </CartProvider>
+        </MenuProvider>
       </AuthProvider>
     </Router>
   );

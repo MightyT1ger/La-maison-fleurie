@@ -23,6 +23,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
+import { useMenu } from '@/context/MenuContext';
+import { MenuOverlay } from '@/components/MenuOverlay';
 import { 
   Sheet,
   SheetContent,
@@ -38,6 +40,7 @@ export const Navbar = () => {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const { cart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
+  const { isMenuOpen, setIsMenuOpen, pdfUrl } = useMenu();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -47,6 +50,7 @@ export const Navbar = () => {
 
   const navItems = [
     { name: 'High Tea', href: isHome ? '#tea-room' : '/#tea-room' },
+    { name: 'Menu', onClick: () => setIsMenuOpen(true) },
     { name: 'Boutique', href: isHome ? '#boutique' : '/#boutique' },
     { name: 'Over Ons', href: isHome ? '#about' : '/#about' },
     { name: 'Contact', href: isHome ? '#contact' : '/#contact' },
@@ -84,16 +88,29 @@ export const Navbar = () => {
           </motion.div>
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link 
-                key={item.name}
-                to={item.href} 
-                className={cn(
-                  "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
-                  scrolled || !isHome ? "text-foreground/70" : "text-white/80"
-                )}
-              >
-                {item.name}
-              </Link>
+              item.href ? (
+                <Link 
+                  key={item.name}
+                  to={item.href} 
+                  className={cn(
+                    "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
+                    scrolled || !isHome ? "text-foreground/70" : "text-white/80"
+                  )}
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <button
+                  key={item.name}
+                  onClick={item.onClick}
+                  className={cn(
+                    "text-xs font-medium tracking-widest uppercase transition-colors hover:text-gold",
+                    scrolled || !isHome ? "text-foreground/70" : "text-white/80"
+                  )}
+                >
+                  {item.name}
+                </button>
+              )
             ))}
             
             <div className="flex items-center gap-4 border-l border-wine/10 pl-8">
@@ -255,14 +272,27 @@ export const Navbar = () => {
           className="md:hidden bg-petal border-b border-wine/20 px-4 pt-2 pb-6 space-y-4"
         >
           {navItems.map((item) => (
-            <Link 
-              key={item.name}
-              to={item.href} 
-              className="block text-lg font-medium" 
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </Link>
+            item.href ? (
+              <Link 
+                key={item.name}
+                to={item.href} 
+                className="block text-lg font-medium" 
+                onClick={() => setIsOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ) : (
+              <button
+                key={item.name}
+                className="block text-lg font-medium" 
+                onClick={() => {
+                  item.onClick?.();
+                  setIsOpen(false);
+                }}
+              >
+                {item.name}
+              </button>
+            )
           ))}
           <Link to="/#booking" onClick={() => setIsOpen(false)}>
             <Button className="w-full bg-wine hover:bg-wine-dark text-white rounded-full">
@@ -270,6 +300,15 @@ export const Navbar = () => {
             </Button>
           </Link>
         </motion.div>
+      )}
+
+      {/* Global Menu Overlay */}
+      {pdfUrl && (
+        <MenuOverlay 
+          isOpen={isMenuOpen} 
+          onClose={() => setIsMenuOpen(false)} 
+          pdfUrl={pdfUrl} 
+        />
       )}
     </nav>
   );

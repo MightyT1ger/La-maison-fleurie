@@ -14,12 +14,26 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
       },
       "required": ["name", "price", "img", "category"]
+    },
+    "MenuSetting": {
+      "title": "MenuSetting",
+      "description": "Configuration for the tea room menu",
+      "type": "object",
+      "properties": {
+        "pdfUrl": { "type": "string", "description": "URL to the menu PDF" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["pdfUrl"]
     }
   },
   "firestore": {
     "/products/{productId}": {
       "schema": "Product",
       "description": "Collection of webshop products"
+    },
+    "/settings/menu": {
+      "schema": "MenuSetting",
+      "description": "Global menu configuration"
     }
   }
 }

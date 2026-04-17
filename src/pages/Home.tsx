@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useMenu } from '@/context/MenuContext';
 
-const Hero = () => {
+const Hero = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -48,12 +49,24 @@ const Hero = () => {
             "Élégance et Fleurs en Harmonie"
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Button size="lg" className="bg-wine hover:bg-wine-dark text-white rounded-full px-10 py-8 text-xl shadow-2xl shadow-wine/20 group border-none transition-all duration-500 hover:scale-105">
+            <Button 
+              size="lg" 
+              className="bg-wine hover:bg-wine-dark text-white rounded-full px-10 py-8 text-xl shadow-2xl shadow-wine/20 group border-none transition-all duration-500 hover:scale-105"
+              onClick={() => {
+                const booking = document.getElementById('booking');
+                booking?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Reserveer een High Tea
               <ChevronRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="border-gold text-gold hover:bg-gold hover:text-white backdrop-blur-sm rounded-full px-10 py-8 text-xl border-2 transition-all duration-500 hover:scale-105">
-              Ontdek onze Winkel
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-gold text-gold hover:bg-gold hover:text-white backdrop-blur-sm rounded-full px-10 py-8 text-xl border-2 transition-all duration-500 hover:scale-105"
+              onClick={onOpenMenu}
+            >
+              Bekijk het Menu
             </Button>
           </div>
         </motion.div>
@@ -71,7 +84,7 @@ const Hero = () => {
   );
 };
 
-const TeaRoom = () => {
+const TeaRoom = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   return (
     <section id="tea-room" className="py-32 bg-white relative overflow-hidden">
       <div className="absolute inset-0 bg-floral"></div>
@@ -112,7 +125,12 @@ const TeaRoom = () => {
                 </CardContent>
               </Card>
             </div>
-            <Button className="bg-wine hover:bg-wine-dark text-white rounded-full px-10 py-6 text-lg transition-transform hover:scale-105">Bekijk de Menukaart</Button>
+            <Button 
+              className="bg-wine hover:bg-wine-dark text-white rounded-full px-10 py-6 text-lg transition-transform hover:scale-105"
+              onClick={onOpenMenu}
+            >
+              Bekijk de Menukaart
+            </Button>
           </motion.div>
           
           <div className="relative">
@@ -388,10 +406,20 @@ const BookingSection = () => {
 };
 
 export default function Home() {
+  const { setIsMenuOpen, pdfUrl } = useMenu();
+
+  const handleOpenMenu = () => {
+    if (pdfUrl) {
+      setIsMenuOpen(true);
+    } else {
+      alert("Het menu is momenteel niet beschikbaar. Probeer het later opnieuw.");
+    }
+  };
+
   return (
     <>
-      <Hero />
-      <TeaRoom />
+      <Hero onOpenMenu={handleOpenMenu} />
+      <TeaRoom onOpenMenu={handleOpenMenu} />
       <Boutique />
       <AboutUs />
       <BookingSection />

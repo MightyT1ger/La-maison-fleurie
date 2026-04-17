@@ -3,14 +3,19 @@ import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { db, loginWithGoogle, logout } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { db, storage, loginWithGoogle, logout } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/context/AuthContext';
-import { Plus, Trash2, LogIn, LogOut, Package, Euro, Image as ImageIcon, Tag } from 'lucide-react';
+import { Plus, Trash2, LogIn, LogOut, Package, Euro, Image as ImageIcon, Tag, FileText, Upload, ExternalLink, Loader2, ShieldCheck, Lock } from 'lucide-react';
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
+  const [accessCode, setAccessCode] = useState('');
+  const [isHashed, setIsHashed] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
+  const [menuConfig, setMenuConfig] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
@@ -26,8 +31,44 @@ export default function Admin() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return unsubscribe;
+    
+    const unsubscribeMenu = onSnapshot(doc(db, 'settings', 'menu'), (doc) => {
+      if (doc.exists()) {
+        setMenuConfig(doc.data());
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeMenu();
+    };
   }, [isAdmin]);
+
+  const handleMenuUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isAdmin) return;
+
+    if (file.type !== 'application/pdf') {
+      alert("Alleen PDF bestanden zijn toegestaan.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const storageRef = ref(storage, `menus/menukaart_${Date.now()}.pdf`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      
+      await setDoc(doc(db, 'settings', 'menu'), {
+        pdfUrl: url,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error uploading menu:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,18 +94,84 @@ export default function Admin() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Laden...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-petal">Laden...</div>;
 
+  // Step 1: Secret Access Code
+  if (!isHashed && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4 font-mono">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md space-y-8"
+        >
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 bg-wine/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-wine/30">
+              <Lock className="h-8 w-8 text-wine" />
+            </div>
+            <h1 className="text-2xl text-white tracking-widest uppercase font-bold">Encrypted Access</h1>
+            <p className="text-zinc-500 text-sm">Enter the terminal authorization code to proceed.</p>
+          </div>
+          
+          <div className="space-y-4">
+            <Input 
+              type="password"
+              placeholder="••••••••"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && accessCode === 'Fleurie2024') {
+                  setIsHashed(true);
+                }
+              }}
+              className="bg-zinc-900 border-zinc-800 text-gold text-center py-6 rounded-xl focus-visible:ring-wine/40"
+            />
+            <Button 
+              onClick={() => {
+                if (accessCode === 'Fleurie2024') {
+                  setIsHashed(true);
+                } else {
+                  alert("Ongeldige code.");
+                }
+              }}
+              className="w-full bg-wine hover:bg-wine-dark text-white rounded-xl py-6 tracking-[0.2em] font-bold uppercase text-xs"
+            >
+              Verify Identity
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Step 2: Google Authentication (Only if code is correct)
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-petal px-4">
-        <Card className="w-full max-w-md p-8 text-center space-y-6 border-wine/10">
-          <h1 className="text-3xl font-heading text-wine">Admin Login</h1>
-          <p className="text-muted-foreground">Log in met je Google-account om de webshop te beheren.</p>
-          <Button onClick={loginWithGoogle} className="w-full bg-wine text-white rounded-full py-6">
-            <LogIn className="mr-2 h-5 w-5" /> Inloggen met Google
-          </Button>
-        </Card>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <Card className="p-10 text-center space-y-8 border-wine/10 shadow-2xl rounded-[2.5rem] bg-white">
+            <div className="space-y-3">
+              <div className="w-20 h-20 bg-wine/5 rounded-full flex items-center justify-center mx-auto">
+                <ShieldCheck className="h-10 w-10 text-wine" />
+              </div>
+              <h1 className="text-4xl font-heading text-wine">Beveiligde Toegang</h1>
+              <p className="text-muted-foreground text-balance">Stap 2: Bevestig je identiteit via Google om het beheerpaneel te openen.</p>
+            </div>
+            
+            <Button 
+              onClick={loginWithGoogle} 
+              className="w-full bg-wine text-white rounded-full py-8 text-lg font-medium shadow-xl shadow-wine/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <LogIn className="mr-3 h-6 w-6" /> Inloggen met Google
+            </Button>
+            
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground opacity-50">Authorized Personnel Only</p>
+          </Card>
+        </motion.div>
       </div>
     );
   }
@@ -93,6 +200,58 @@ export default function Admin() {
             <LogOut className="mr-2 h-4 w-4" /> Uitloggen
           </Button>
         </div>
+
+        {/* Menu Section */}
+        <Card className="p-8 border-wine/10 bg-white shadow-sm overflow-hidden relative">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-heading text-wine flex items-center gap-3">
+                <FileText className="h-6 w-6" /> Menukaart Beheer
+              </h2>
+              <p className="text-muted-foreground">Upload een PDF die klanten op de site kunnen inzien.</p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {menuConfig?.pdfUrl && (
+                <a 
+                  href={menuConfig.pdfUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-wine font-medium hover:underline px-4 py-2"
+                >
+                  <ExternalLink className="h-4 w-4" /> Bekijk huidige PDF
+                </a>
+              )}
+              
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleMenuUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading}
+                />
+                <Button 
+                  disabled={uploading}
+                  className="bg-wine text-white rounded-full px-8 py-6 h-auto transition-transform active:scale-95"
+                >
+                  {uploading ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-5 w-5" />
+                  )}
+                  {uploading ? 'Verwerken...' : 'PDF Uploaden'}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {menuConfig?.updatedAt && (
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-6 opacity-60">
+              Laatst bijgewerkt: {new Date(menuConfig.updatedAt.toDate()).toLocaleString('nl-NL')}
+            </p>
+          )}
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Add Product Form */}

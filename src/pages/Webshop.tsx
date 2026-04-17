@@ -23,15 +23,25 @@ export default function Webshop() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 400); // Past the header
+    };
+    window.addEventListener('scroll', handleScroll);
+    
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     });
-    return unsubscribe;
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      unsubscribe();
+    };
   }, []);
 
   const filteredProducts = products.filter(p => 
@@ -60,10 +70,25 @@ export default function Webshop() {
       </section>
 
       {/* Filters & Search */}
-      <section className="py-12 bg-white border-b border-wine/5 sticky top-[72px] z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-4 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto no-scrollbar">
+      <section className={cn(
+        "sticky top-[72px] z-30 transition-all duration-500",
+        scrolled ? "py-4 bg-white/80 backdrop-blur-lg shadow-md" : "py-12 bg-white"
+      )}>
+        <motion.div 
+          animate={{ 
+            maxWidth: scrolled ? "1000px" : "1280px",
+            scale: scrolled ? 0.98 : 1
+          }}
+          className="mx-auto px-4 sm:px-6 lg:px-8"
+        >
+          <div className={cn(
+            "flex flex-col md:flex-row justify-between items-center gap-6 transition-all duration-500",
+            scrolled ? "md:gap-12" : "gap-8"
+          )}>
+            <div className={cn(
+              "flex items-center gap-3 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto no-scrollbar transition-all duration-500",
+              scrolled ? "scale-95" : ""
+            )}>
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -79,17 +104,23 @@ export default function Webshop() {
                 </button>
               ))}
             </div>
-            <div className="relative w-full md:w-80">
+            <div className={cn(
+              "relative w-full transition-all duration-500",
+              scrolled ? "md:w-64" : "md:w-80"
+            )}>
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Zoek producten..." 
-                className="pl-12 rounded-full bg-petal/30 border-none h-12 focus-visible:ring-wine/20"
+                className={cn(
+                  "pl-12 rounded-full bg-petal/30 border-none transition-all duration-500 focus-visible:ring-wine/20",
+                  scrolled ? "h-10 text-sm" : "h-12"
+                )}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Product Grid */}

@@ -23,7 +23,7 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img 
-          src="/input_file_4.png" 
+          src="https://picsum.photos/seed/maison-store/1920/1080" 
           alt="La Maison Fleurie Storefront" 
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
@@ -123,7 +123,7 @@ const TeaRoom = () => {
               className="relative z-10 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)]"
             >
               <img 
-                src="/input_file_1.png" 
+                src="https://picsum.photos/seed/tea-experience/1200/1600" 
                 alt="High Tea Experience" 
                 className="w-full h-[600px] object-cover"
                 referrerPolicy="no-referrer"
@@ -157,7 +157,7 @@ const Boutique = () => {
             {
               title: "Losse Thee & Porselein",
               desc: "Hoogwaardige melanges en verfijnde accessoires voor het perfecte theemoment.",
-              img: "/input_file_2.png"
+              img: "https://picsum.photos/seed/boutique-tea/800/1000"
             },
             {
               title: "Home Decor",
@@ -217,7 +217,7 @@ const AboutUs = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                src="/input_file_0.png" 
+                src="https://picsum.photos/seed/friends-cafe/800/1000" 
                 alt="Our Story - Friends laughing" 
                 className="rounded-3xl h-80 w-full object-cover shadow-2xl shadow-wine/10"
                 referrerPolicy="no-referrer"
@@ -227,7 +227,7 @@ const AboutUs = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 viewport={{ once: true }}
-                src="/input_file_3.png" 
+                src="https://picsum.photos/seed/interior-design/800/1000" 
                 alt="Our Story - Interior" 
                 className="rounded-3xl h-80 w-full object-cover mt-12 shadow-2xl shadow-wine/10"
                 referrerPolicy="no-referrer"
